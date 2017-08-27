@@ -96,6 +96,17 @@ def open_image_file(base_dir, code):
             os.system('open '+_path+'/'+image_file)
             break
 
+def get_top_rank_index(src_array, K):
+    # ソートはされていない上位k件のインデックス
+    unsorted_max_indices = np.argpartition(-src_array, K)[:K]
+    # 上位k件の値
+    y = src_array[unsorted_max_indices]
+    # 大きい順にソートし、インデックスを取得
+    indices = np.argsort(-y)
+    # 類似度上位k件のインデックス
+    max_k_indices = unsorted_max_indices[indices]
+    return max_k_indices
+
 
 def inference(images_placeholder, keep_prob, imageSize, channel, numClasses):
     # 重みを標準偏差0.1の正規分布で初期化
@@ -217,6 +228,15 @@ if __name__ == '__main__':
                     keep_prob: 1.0 })[0]
                 pred = np.argmax(pr)
                 open_image_file(FLAGS.load_image_dir, class_list[pred])
+                rank = 10
+                indexes = get_top_rank_index(pr, rank)
+                outputs = []
+                outputs2 = []
+                for c in range(rank):
+                    outputs.append(chr(int(class_list[indexes[c]], 16)))
+                    outputs2.append(str(pr[indexes[c]]))
+                print(outputs)
+                print(outputs2)
             else:
                 print("Need restore model path...")
             exit()
